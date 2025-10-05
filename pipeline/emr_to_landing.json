@@ -30,15 +30,16 @@
 						"referenceName": "generic_adls_flat_file_ds",
 						"type": "DatasetReference",
 						"parameters": {
-							"file_name": "load_config_csv",
+							"file_name": "load_config.csv",
 							"file_path": "emr",
 							"container": "configs"
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
-				"name": "Fetch_logs",
+				"name": "ForEach1",
 				"type": "ForEach",
 				"dependsOn": [
 					{
@@ -56,7 +57,7 @@
 					},
 					"activities": [
 						{
-							"name": "Get Metadata1",
+							"name": "File_Exists",
 							"type": "GetMetadata",
 							"dependsOn": [],
 							"policy": {
@@ -101,7 +102,7 @@
 							"type": "IfCondition",
 							"dependsOn": [
 								{
-									"activity": "Get Metadata1",
+									"activity": "File_Exists",
 									"dependencyConditions": [
 										"Succeeded"
 									]
@@ -110,12 +111,12 @@
 							"userProperties": [],
 							"typeProperties": {
 								"expression": {
-									"value": "@and(\r\n    equals(activity('Get Metadata1').output.exists,true),\r\n    equals(item().is_active,'1')\r\n    )",
+									"value": "@and(\n    equals(activity('File_Exists').output.exists,true),\n    equals(item().is_active,'1')\n    )",
 									"type": "Expression"
 								},
 								"ifTrueActivities": [
 									{
-										"name": "Copy data1",
+										"name": "Archive File",
 										"type": "Copy",
 										"dependsOn": [],
 										"policy": {
@@ -216,7 +217,14 @@
 									{
 										"name": "Copy data2",
 										"type": "Copy",
-										"dependsOn": [],
+										"dependsOn": [
+											{
+												"activity": "Fetch_logs",
+												"dependencyConditions": [
+													"Succeeded"
+												]
+											}
+										],
 										"policy": {
 											"timeout": "0.12:00:00",
 											"retry": 0,
@@ -235,7 +243,24 @@
 												"queryTimeout": "02:00:00",
 												"partitionOption": "None"
 											},
-											"enableStaging": false
+											"sink": {
+												"type": "ParquetSink",
+												"storeSettings": {
+													"type": "AzureBlobFSWriteSettings"
+												},
+												"formatSettings": {
+													"type": "ParquetWriteSettings"
+												}
+											},
+											"enableStaging": false,
+											"translator": {
+												"type": "TabularTranslator",
+												"typeConversion": true,
+												"typeConversionSettings": {
+													"allowDataTruncation": true,
+													"treatBooleanAsNumber": false
+												}
+											}
 										},
 										"inputs": [
 											{
@@ -256,7 +281,54 @@
 													}
 												}
 											}
+										],
+										"outputs": [
+											{
+												"referenceName": "generic_adls_parquet_ds",
+												"type": "DatasetReference",
+												"parameters": {
+													"container": "bronze",
+													"file_path": {
+														"value": "@item.targetpath",
+														"type": "Expression"
+													},
+													"file_name": {
+														"value": "@split(item().tablename,'.')[1]",
+														"type": "Expression"
+													}
+												}
+											}
 										]
+									},
+									{
+										"name": "Fetch_logs",
+										"type": "Lookup",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "JsonSource",
+												"storeSettings": {
+													"type": "AzureBlobFSReadSettings",
+													"recursive": true,
+													"enablePartitionDiscovery": false
+												},
+												"formatSettings": {
+													"type": "JsonReadSettings"
+												}
+											},
+											"dataset": {
+												"referenceName": "ls_for_lookup_file_adls_to_sql",
+												"type": "DatasetReference"
+											}
+										}
 									}
 								],
 								"ifTrueActivities": [
