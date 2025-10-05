@@ -1,0 +1,22 @@
+{
+	"name": "hosq_sql_ls",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"parameters": {
+			"db_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "healthcare-sqlserver.database.windows.net",
+			"database": "@{linkedService().db_name}",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "healthcare",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDRCMDJFREI0LTg3NzctNERBMC04MEU5LTAzNDI4NkZCQjI5MF81MjQwZTgzMS1jYmIwLTQ2YmEtOTU4YS1lMTcxYWNhNmEyZGMiDQp9"
+		}
+	}
+}

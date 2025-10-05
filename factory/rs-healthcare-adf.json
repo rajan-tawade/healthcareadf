@@ -1,0 +1,9 @@
+{
+	"name": "rs-healthcare-adf",
+	"location": "uksouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "68f6361f-8d20-4840-8352-01456939ef6f",
+		"tenantId": "b3a6e385-e7d8-469f-9a55-194ce2781640"
+	}
+}
