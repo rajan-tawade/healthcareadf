@@ -38,7 +38,7 @@
 				}
 			},
 			{
-				"name": "ForEach1",
+				"name": "Fetch_logs",
 				"type": "ForEach",
 				"dependsOn": [
 					{
@@ -88,6 +88,7 @@
 								],
 								"storeSettings": {
 									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
 									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
@@ -211,6 +212,53 @@
 									"value": "@equals(item().loadtype,'Full')",
 									"type": "Expression"
 								},
+								"ifFalseActivities": [
+									{
+										"name": "Copy data2",
+										"type": "Copy",
+										"dependsOn": [],
+										"policy": {
+											"timeout": "0.12:00:00",
+											"retry": 0,
+											"retryIntervalInSeconds": 30,
+											"secureOutput": false,
+											"secureInput": false
+										},
+										"userProperties": [],
+										"typeProperties": {
+											"source": {
+												"type": "AzureSqlSource",
+												"sqlReaderQuery": {
+													"value": "@concat('select *,''',item().datasource,''' as datasource from\n',item().tablename,' where ',item().watermark,' >=\n''',activity('Fetch_logs').output.firstRow.last_fetched_date,'''')",
+													"type": "Expression"
+												},
+												"queryTimeout": "02:00:00",
+												"partitionOption": "None"
+											},
+											"enableStaging": false
+										},
+										"inputs": [
+											{
+												"referenceName": "generic_sql_ds",
+												"type": "DatasetReference",
+												"parameters": {
+													"db_name": {
+														"value": "item().database",
+														"type": "Expression"
+													},
+													"schema_name": {
+														"value": "@split(item().tablename,'.')[0]",
+														"type": "Expression"
+													},
+													"table_name": {
+														"value": "@split(item().tablename,'.')[1]",
+														"type": "Expression"
+													}
+												}
+											}
+										]
+									}
+								],
 								"ifTrueActivities": [
 									{
 										"name": "Full_load_cp",
@@ -227,7 +275,10 @@
 										"typeProperties": {
 											"source": {
 												"type": "AzureSqlSource",
-												"sqlReaderQuery": "@concat('select *,''',item().datasource,''' as datasource from\n',item().tablename)",
+												"sqlReaderQuery": {
+													"value": "@concat('select *,''',item().datasource,''' as datasource from\n',item().tablename)",
+													"type": "Expression"
+												},
 												"queryTimeout": "02:00:00",
 												"partitionOption": "None"
 											},
