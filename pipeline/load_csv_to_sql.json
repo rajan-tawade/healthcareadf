@@ -1,5 +1,5 @@
 {
-	"name": "pipeline1",
+	"name": "load_csv_to_sql",
 	"properties": {
 		"activities": [
 			{
