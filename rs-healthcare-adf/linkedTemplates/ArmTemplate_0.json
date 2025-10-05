@@ -278,11 +278,12 @@
 								"referenceName": "generic_adls_flat_file_ds",
 								"type": "DatasetReference",
 								"parameters": {
-									"file_name": "load_config_csv",
+									"file_name": "load_config.csv",
 									"file_path": "emr",
 									"container": "configs"
 								}
-							}
+							},
+							"firstRowOnly": false
 						}
 					},
 					{
@@ -304,7 +305,7 @@
 							},
 							"activities": [
 								{
-									"name": "Get Metadata1",
+									"name": "File_Exists",
 									"type": "GetMetadata",
 									"dependsOn": [],
 									"policy": {
@@ -349,7 +350,7 @@
 									"type": "IfCondition",
 									"dependsOn": [
 										{
-											"activity": "Get Metadata1",
+											"activity": "File_Exists",
 											"dependencyConditions": [
 												"Succeeded"
 											]
@@ -358,12 +359,12 @@
 									"userProperties": [],
 									"typeProperties": {
 										"expression": {
-											"value": "@and(\r\n    equals(activity('Get Metadata1').output.exists,true),\r\n    equals(item().is_active,'1')\r\n    )",
+											"value": "@and(\n    equals(activity('File_Exists').output.exists,true),\n    equals(item().is_active,'1')\n    )",
 											"type": "Expression"
 										},
 										"ifTrueActivities": [
 											{
-												"name": "Copy data1",
+												"name": "Archive File",
 												"type": "Copy",
 												"dependsOn": [],
 												"policy": {
@@ -460,6 +461,125 @@
 											"value": "@equals(item().loadtype,'Full')",
 											"type": "Expression"
 										},
+										"ifFalseActivities": [
+											{
+												"name": "Copy data2",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "Fetch_logs",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureSqlSource",
+														"sqlReaderQuery": {
+															"value": "@concat('select *,''',item().datasource,''' as datasource from\n',item().tablename,' where ',item().watermark,' >=\n''',activity('Fetch_logs').output.firstRow.last_fetched_date,'''')",
+															"type": "Expression"
+														},
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "generic_sql_ds",
+														"type": "DatasetReference",
+														"parameters": {
+															"db_name": {
+																"value": "item().database",
+																"type": "Expression"
+															},
+															"schema_name": {
+																"value": "@split(item().tablename,'.')[0]",
+																"type": "Expression"
+															},
+															"table_name": {
+																"value": "@split(item().tablename,'.')[1]",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "generic_adls_parquet_ds",
+														"type": "DatasetReference",
+														"parameters": {
+															"container": "bronze",
+															"file_path": {
+																"value": "@item.targetpath",
+																"type": "Expression"
+															},
+															"file_name": {
+																"value": "@split(item().tablename,'.')[1]",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											},
+											{
+												"name": "Fetch_logs",
+												"type": "Lookup",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "JsonSource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "JsonReadSettings"
+														}
+													},
+													"dataset": {
+														"referenceName": "ls_for_lookup_file_adls_to_sql",
+														"type": "DatasetReference",
+														"parameters": {}
+													}
+												}
+											}
+										],
 										"ifTrueActivities": [
 											{
 												"name": "Full_load_cp",
@@ -555,7 +675,8 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/generic_adls_flat_file_ds')]",
 				"[concat(variables('factoryId'), '/datasets/generic_adls_parquet_ds')]",
-				"[concat(variables('factoryId'), '/datasets/generic_sql_ds')]"
+				"[concat(variables('factoryId'), '/datasets/generic_sql_ds')]",
+				"[concat(variables('factoryId'), '/datasets/ls_for_lookup_file_adls_to_sql')]"
 			]
 		},
 		{
