@@ -164,15 +164,12 @@
 												"referenceName": "generic_adls_parquet_ds",
 												"type": "DatasetReference",
 												"parameters": {
-													"container": {
-														"value": "@split(item().tablenaem,'.')[1]",
-														"type": "Expression"
-													},
+													"container": "bronze",
 													"file_path": {
 														"value": "@item().targetpath",
 														"type": "Expression"
 													},
-													"file_name": "bronze"
+													"file_name": "@split(item().tablename,'.')[1]"
 												}
 											}
 										],
