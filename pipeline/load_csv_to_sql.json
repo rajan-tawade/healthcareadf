@@ -80,36 +80,8 @@
 									"writeBehavior": "insert",
 									"sqlWriterUseTableLock": false
 								},
-								"enableStaging": false,
-								"translator": {
-									"type": "TabularTranslator",
-									"typeConversion": true,
-									"typeConversionSettings": {
-										"allowDataTruncation": true,
-										"treatBooleanAsNumber": false
-									}
-								}
+								"enableStaging": false
 							},
-							"inputs": [
-								{
-									"referenceName": "generic_adls_flat_file_ds",
-									"type": "DatasetReference",
-									"parameters": {
-										"file_name": {
-											"value": "@item().FileName",
-											"type": "Expression"
-										},
-										"file_path": {
-											"value": "@item().FilePath",
-											"type": "Expression"
-										},
-										"container": {
-											"value": "@item().Container",
-											"type": "Expression"
-										}
-									}
-								}
-							],
 							"outputs": [
 								{
 									"referenceName": "generic_sql_ds",
