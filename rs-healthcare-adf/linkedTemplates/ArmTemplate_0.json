@@ -163,6 +163,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/generic_adls_flat_file_ds')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"container": {
+						"type": "string"
+					},
+					"file_path": {
+						"type": "string"
+					},
+					"file_name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().file_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().file_path",
+							"type": "Expression"
+						},
+						"fileSystem": {
+							"value": "@dataset().container",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/generic_adls_parquet_ds')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -272,55 +321,6 @@
 					}
 				},
 				"schema": {}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/generic_adls_flat_file_ds')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "AzureDataLakeStorage1",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"container": {
-						"type": "string"
-					},
-					"file_path": {
-						"type": "string"
-					},
-					"file_name": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().file_name",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().file_path",
-							"type": "Expression"
-						},
-						"fileSystem": {
-							"value": "@dataset().container",
-							"type": "Expression"
-						}
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
@@ -494,15 +494,12 @@
 														"referenceName": "generic_adls_parquet_ds",
 														"type": "DatasetReference",
 														"parameters": {
-															"container": {
-																"value": "@split(item().tablenaem,'.')[1]",
-																"type": "Expression"
-															},
+															"container": "bronze",
 															"file_path": {
 																"value": "@item().targetpath",
 																"type": "Expression"
 															},
-															"file_name": "bronze"
+															"file_name": "@split(item().tablename,'.')[1]"
 														}
 													}
 												],
@@ -976,8 +973,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ls_for_lookup_file_adls_to_sql')]",
-				"[concat(variables('factoryId'), '/datasets/generic_sql_ds')]",
-				"[concat(variables('factoryId'), '/datasets/generic_adls_flat_file_ds')]"
+				"[concat(variables('factoryId'), '/datasets/generic_adls_flat_file_ds')]",
+				"[concat(variables('factoryId'), '/datasets/generic_sql_ds')]"
 			]
 		}
 	]
