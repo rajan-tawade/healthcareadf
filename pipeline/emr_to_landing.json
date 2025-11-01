@@ -26,6 +26,15 @@
 							"type": "DelimitedTextReadSettings"
 						}
 					},
+					"dataset": {
+						"referenceName": "generic_adls_flat_file_ds",
+						"type": "DatasetReference",
+						"parameters": {
+							"container": "configs",
+							"file_path": "emr",
+							"file_name": "load_config.csv"
+						}
+					},
 					"firstRowOnly": false
 				}
 			},
