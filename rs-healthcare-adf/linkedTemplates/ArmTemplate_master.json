@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
+		"AzureDatabricksDeltaLake1_ls_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1_ls'"
+		},
 		"hosq_sql_ls_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'hosq_sql_ls'"
@@ -60,6 +64,9 @@
 					},
 					"AzureDataLakeStorage1_accountKey": {
 						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					},
+					"AzureDatabricksDeltaLake1_ls_accessToken": {
+						"value": "[parameters('AzureDatabricksDeltaLake1_ls_accessToken')]"
 					},
 					"hosq_sql_ls_password": {
 						"value": "[parameters('hosq_sql_ls_password')]"

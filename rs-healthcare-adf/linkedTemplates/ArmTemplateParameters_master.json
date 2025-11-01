@@ -8,6 +8,9 @@
 		"AzureDataLakeStorage1_accountKey": {
 			"value": ""
 		},
+		"AzureDatabricksDeltaLake1_ls_accessToken": {
+			"value": ""
+		},
 		"hosq_sql_ls_password": {
 			"value": ""
 		},

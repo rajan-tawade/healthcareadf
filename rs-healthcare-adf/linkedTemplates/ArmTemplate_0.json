@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
 		},
+		"AzureDatabricksDeltaLake1_ls_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'AzureDatabricksDeltaLake1_ls'"
+		},
 		"hosq_sql_ls_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'hosq_sql_ls'"
@@ -54,6 +58,24 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureDatabricksDeltaLake1_ls')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureDatabricksDeltaLake",
+				"typeProperties": {
+					"domain": "https://adb-1602581313671393.13.azuredatabricks.net",
+					"clusterId": "1101-174214-cgtsofb2",
+					"accessToken": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDatabricksDeltaLake1_ls_accessToken')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/hosq_sql_ls')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -79,6 +101,52 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDatabricksDeltaLakeDataset1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDatabricksDeltaLake1_ls",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureDatabricksDeltaLakeDataset",
+				"typeProperties": {
+					"database": "audit",
+					"table": "load_logs"
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "long"
+					},
+					{
+						"name": "data_source",
+						"type": "string"
+					},
+					{
+						"name": "tablename",
+						"type": "string"
+					},
+					{
+						"name": "numberofrowscopied",
+						"type": "integer"
+					},
+					{
+						"name": "watermarkcolumnname",
+						"type": "string"
+					},
+					{
+						"name": "loaddate",
+						"type": "timestamp"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDatabricksDeltaLake1_ls')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/generic_adls_flat_file_ds')]",
