@@ -65,8 +65,8 @@
 				"annotations": [],
 				"type": "AzureDatabricksDeltaLake",
 				"typeProperties": {
-					"domain": "https://adb-1602581313671393.13.azuredatabricks.net",
-					"clusterId": "1101-174214-cgtsofb2",
+					"domain": "https://adb-3855754121344971.11.azuredatabricks.net",
+					"clusterId": "1102-133019-320ecx25",
 					"accessToken": {
 						"type": "SecureString",
 						"value": "[parameters('AzureDatabricksDeltaLake1_ls_accessToken')]"
@@ -596,7 +596,7 @@
 														"type": "DatasetReference",
 														"parameters": {
 															"db_name": {
-																"value": "item().database",
+																"value": "@item().database",
 																"type": "Expression"
 															},
 															"schema_name": {
@@ -617,7 +617,7 @@
 														"parameters": {
 															"container": "bronze",
 															"file_path": {
-																"value": "item().targetpath",
+																"value": "@item().targetpath",
 																"type": "Expression"
 															},
 															"file_name": {
